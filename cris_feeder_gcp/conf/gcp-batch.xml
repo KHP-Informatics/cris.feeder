@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <batch id="streamTest" xmlns="http://gate.ac.uk/ns/cloud/batch/1.0">
+  <application file="main-bio/main-bio.xgapp"/>
+  <report file="stream-report.xml"/>
+
+  <input
+	encoding =  "UTF-8"
+	class	=  "kcl.iop.brc.core.kconnect.crisfeeder.CRISDocInputHandler"
+	driver   =  "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+
+  />
+
+  <output indexUrl="http://192.168.100.101:8080/47a420b2-3860-42f7-bf8b-7da2ca3ac63b"
+	connectionInterval="1000"
+	class="gate.cloud.io.mimir.MimirOutputHandler"/>
+
+
+ <documents>
+  <documentEnumerator class="kcl.iop.brc.core.kconnect.crisfeeder.CRISDocEnumerator"/>
+ </documents>
+
+
+</batch>
