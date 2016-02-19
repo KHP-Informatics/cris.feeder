@@ -19,12 +19,13 @@ import gate.util.GateException;
 public class CRISDocEnumerator implements DocumentEnumerator {
 	static Logger _logger = Logger.getLogger(CRISDocEnumerator.class);
 	static long maxSeq = 10000;
-	static int cacheSize = 3000;
+	static int cacheSize = 3000, offset = 0;
 	static String sqlPrefix = "";
 	
 	static{
 		maxSeq = Long.parseLong(Configurator.getConfig("cris_max_seq"));
 		cacheSize = Integer.parseInt(Configurator.getConfig("cris_batch_docid_num"));
+		offset = Integer.parseInt(Configurator.getConfig("cris_batch_offset"));
 		sqlPrefix = "SELECT docid FROM ( " +
 			    "SELECT " + DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol")) + " docid, ROW_NUMBER() OVER (ORDER BY " + 
 			    DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol")) + ") AS RowNum " +
@@ -36,7 +37,7 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 	private List<String> cachedDocIds = new LinkedList<String>();
 	
 	public CRISDocEnumerator(){
-		this.curSeq = 0;
+		this.curSeq = offset;
 	}
 	
 	void readCacheFromDB(){
