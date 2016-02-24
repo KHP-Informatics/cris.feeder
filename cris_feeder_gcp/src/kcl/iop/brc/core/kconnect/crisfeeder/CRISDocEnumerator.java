@@ -42,7 +42,7 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 	
 	void readCacheFromDB(){
 
-		String sql = sqlPrefix + curSeq + " AND " + (curSeq + cacheSize);
+		String sql = sqlPrefix + curSeq + " AND " + Math.min(maxSeq, curSeq + cacheSize);
 		try {
 			cachedDocIds.clear();
 			
