@@ -22,7 +22,9 @@ public class CRISDocInputHandler implements InputHandler {
 	static String mimeType = Configurator.getConfig("mimieType");
 	static String encoding = Configurator.getConfig("encoding");
 	static String sqlPrefix = "select "
-			+ DBUtil.escapeString(Configurator.getConfig("DocTableContentCol"))
+			+ DBUtil.escapeString(Configurator.getConfig("DocTableContentCol")) + ","
+			+ DBUtil.escapeString(Configurator.getConfig("DocTableDocDateCol")) + ","
+			+ DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol"))
 			+ " from "
 			+ DBUtil.escapeString(Configurator.getConfig("DocTableName"))
 			+ " where "
@@ -46,7 +48,7 @@ public class CRISDocInputHandler implements InputHandler {
 		if (null == docId || docId.getIdText() == null) return null;
 		String sql = sqlPrefix + "'" + DBUtil.escapeString(docId.getIdText()) + "'";
 		try {
-			String content = DBHelper.getScalar(sql);
+			String[] dataRow = DBHelper.getStringArray(sql, 3);
 
 			FeatureMap params = Factory.newFeatureMap();
 		    if(mimeType != null && mimeType.length() > 0) {
@@ -56,12 +58,16 @@ public class CRISDocInputHandler implements InputHandler {
 		      params.put(Document.DOCUMENT_ENCODING_PARAMETER_NAME, encoding);
 		    }
 		    params.put(Document.DOCUMENT_MARKUP_AWARE_PARAMETER_NAME, Boolean.TRUE);
-		    params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, content);
+		    params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, dataRow[0]);
+		    
+		    Document doc = (Document)Factory.createResource("gate.corpora.DocumentImpl",
+	                params, Factory.newFeatureMap(), docId.toString());
+		    doc.getFeatures().put("publicationDate", Long.parseLong(dataRow[1]));
+		    doc.getFeatures().put("id", dataRow[2]);
 
 		    DocumentData docData = new DocumentData(
-		            (Document)Factory.createResource("gate.corpora.DocumentImpl",
-		                params, Factory.newFeatureMap(), docId.toString()), docId);
-		    _logger.info("Doc(" + docId + ") read, length:" + content.length());
+		            doc, docId);
+		    _logger.info("Doc(" + docId + ") read, length:" + dataRow[0].length() + " " + dataRow[1]);
 		    return docData;
 
 		} catch (DBExecutionException e) {
