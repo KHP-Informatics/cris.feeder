@@ -17,5 +17,36 @@ The configuration file is named config.properties, which should be loadable at r
 ## usage
 To use the feeder, these two handlers are to be setup in the GCP batch file (see `conf/gcp-batch.xml`).
 
+The document enumerator setting in GCP configuration.
+```xml
+<documents>
+  <documentEnumerator class="kcl.iop.brc.core.kconnect.crisfeeder.CRISDocEnumerator"/>
+ </documents>
+```
+
+The input handler setting:
+```xml
+<input
+	encoding =  "UTF-8"
+	class	=  "kcl.iop.brc.core.kconnect.crisfeeder.CRISDocInputHandler"
+	driver   =  "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  />
+```
+
+(Optional) if you want to store the output of bio-yodie annotations as JSON files for future use, you can follow these settings.
+
+- put the following into GCP configuration file:
+```xml
+<output 
+	class="kcl.iop.brc.core.kconnect.outputhandler.YodieOutputHandler"/>
+```
+- put the following in the config.properties file. Set the value of `outputFilePrefix` as the prefix of JSON file names including the full path, e.g., `/opt/bio-yodie-run/output/ann`. The tool will create JSON files by appending thread IDs. This means each thread will use a single JSON file as the output.
+
+```
+#output handler settings
+annotationOutputSettings=[{"annotationSet":"Shef","annotationType":["Mention"]}]
+outputFilePrefix=
+```
+
 ### lib
 One cutomised library used is hwudbutil-1.2.jar, which was written in a research project many years ago for helping junior JAVA developers dealing with DB operations. It supports connection pooling and, most importantly, frees developers from the headache of connection management. 
