@@ -69,7 +69,8 @@ public class YodieOutputHandler implements OutputHandler{
 				}
 			}
 			OutputData od = new OutputData();
-			od.setDocId(doc.getFeatures().get("id").toString());
+			if (doc.getFeatures()!=null && doc.getFeatures().get("id")!=null)
+					od.setDocId(doc.getFeatures().get("id").toString());
 			od.setAnnotations(outputAnns);
 			String s = JSONUtils.toJSON(od) + "\n";
 			
