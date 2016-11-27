@@ -1,6 +1,9 @@
 # cris.feeder
 Part of a scalable execution of Sheffied University's bio-yodie (natural language processing) pipeline over the whole set of CRIS database. This code is part of Deliverable 4.4 of [EU KConnect project](http://kconnect.eu/).
 
+- (updates - 27 Nov 2016) 
+As part of the KConnect project dissemination activities, bio-yodie is now being used in Kings College Hospital for annotating their 10m EHR documents. To support this activity, Elastic Search based input/out handlers have been implemented.
+
 ## input handler
 Feed [Gate GCP](https://gate.ac.uk/gcp/doc/gcp-guide.pdf) with CRIS data streaming from SQL database.
 This feeder implements the following two Gate GCP's interfaces.
