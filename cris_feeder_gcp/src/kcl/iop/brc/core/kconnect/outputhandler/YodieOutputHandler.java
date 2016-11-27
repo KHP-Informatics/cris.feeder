@@ -55,6 +55,8 @@ public class YodieOutputHandler implements OutputHandler{
 			throws IOException, GateException {
 		if (anns != null){
 			List<AnnotationSet> outputAnns = new LinkedList<AnnotationSet>();
+			
+			//output based on settings
 			for(OutputSetting os : anns){
 				AnnotationSet as = doc.getAnnotations(os.getAnnotationSet());
 				for (String type : os.getAnnotationType()){
@@ -68,9 +70,20 @@ public class YodieOutputHandler implements OutputHandler{
 //					}
 				}
 			}
+			
+			//output all
+//			for(String setName : doc.getAnnotationSetNames()){
+//				AnnotationSet as = doc.getAnnotations(setName);
+//				for(String type : as.getAllTypes()){
+//					outputAnns.add(as.get(type));
+//				}
+//			}
+			
 			OutputData od = new OutputData();
 			if (doc.getFeatures()!=null && doc.getFeatures().get("id")!=null)
 					od.setDocId(doc.getFeatures().get("id").toString());
+			else
+				od.setDocId(doc.getName());
 			od.setAnnotations(outputAnns);
 			String s = JSONUtils.toJSON(od) + "\n";
 			
