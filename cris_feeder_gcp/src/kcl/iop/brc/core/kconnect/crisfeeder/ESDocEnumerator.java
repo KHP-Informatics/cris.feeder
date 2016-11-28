@@ -10,7 +10,7 @@ import gate.cloud.io.DocumentEnumerator;
 import gate.util.GateException;
 
 public class ESDocEnumerator implements DocumentEnumerator{
-	private int cache_size = 50000;
+	private int cache_size = 10000;
 	private ESClientWorker _esWorker;
 	private int _totalDocNum = -1;
 	private int _curIndex = 0;
@@ -67,7 +67,16 @@ public class ESDocEnumerator implements DocumentEnumerator{
 	public void init() throws IOException, GateException {
 		_esWorker = ESClientWorker.getInstance();
 		try {
+			int docOffset = Integer.parseInt(Configurator.getConfig("es_doc_offset"));
+			int docSize = Integer.parseInt(Configurator.getConfig("es_doc_size"));
+			if (docOffset >= 0){
+				_curOffset = docOffset;
+				_esWorker.setESDocSeqId(_curOffset + 1);
+			}
 			_totalDocNum = _esWorker.getESDocNum(Configurator.getConfig("es_doc_url"));
+			if (docSize >= 0 && _curOffset + docSize < _totalDocNum){
+				_totalDocNum = _curOffset + docSize;
+			}
 			System.out.println(_totalDocNum);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
