@@ -12,7 +12,9 @@
 
   <output indexUrl="http://192.168.100.101:8080/47a420b2-3860-42f7-bf8b-7da2ca3ac63b"
 	connectionInterval="1000"
-	class="gate.cloud.io.mimir.MimirOutputHandler"/>
+	class="gate.cloud.io.mimir.MimirOutputHandler"
+	output_filed_names="body_analysed,client_idcode,client_firstname,client_lastname,document_dateadded"
+	/>
 
 
  <documents>
