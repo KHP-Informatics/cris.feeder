@@ -2,6 +2,7 @@ package kcl.iop.brc.core.kconnect.outputhandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class ESOutputHandler implements OutputHandler {
 	String _esStoreUrl;
 	List<AnnotationSetDefinition> annotationDefs = null;
 	OutputSetting[] anns;
+	String[] outputAttributes;
 	@Override
 	public void close() throws IOException, GateException {
 		// TODO Auto-generated method stub
@@ -35,9 +37,11 @@ public class ESOutputHandler implements OutputHandler {
 	}
 
 	@Override
-	public void config(Map<String, String> arg0) throws IOException,
+	public void config(Map<String, String> params) throws IOException,
 			GateException {
-		// TODO Auto-generated method stub
+		if (params.containsKey("output_filed_names")){
+			outputAttributes = params.get("output_filed_names").split(",");
+		}
 
 	}
 
@@ -70,6 +74,13 @@ public class ESOutputHandler implements OutputHandler {
 				}
 			}
 			
+			Map origDoc = (Map)JSONUtils.fromJSON(doc.getFeatures().get("esDocDetail").toString());
+			Map resultDoc = new LinkedHashMap<String, Object>();
+			if (outputAttributes != null && outputAttributes.length > 0){
+				for(String attr : outputAttributes){
+					resultDoc.put(attr, origDoc.get(origDoc));
+				}
+			}
 			OutputData od = new OutputData();
 			if (doc.getFeatures()!=null && doc.getFeatures().get("id")!=null)
 					od.setDocId(doc.getFeatures().get("id").toString());
@@ -80,7 +91,8 @@ public class ESOutputHandler implements OutputHandler {
 			if (seqId % 1000 == 0){
 				_logger.info(String.format("%s docs indexed", seqId));
 			}
-			boolean saved = _instance.saveESDoc(_esStoreUrl, JSONUtils.toJSON(od), seqId);
+			resultDoc.put("yodie_ann", od);
+			boolean saved = _instance.saveESDoc(_esStoreUrl, JSONUtils.toJSON(resultDoc), seqId);
 			if (!saved){
 				_logger.error(String.format("annotations of doc %s not saved [seqid: %s]", docId.getIdText(), seqId));
 			}

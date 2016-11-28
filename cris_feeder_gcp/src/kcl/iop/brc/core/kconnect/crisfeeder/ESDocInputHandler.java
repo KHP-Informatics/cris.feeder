@@ -3,6 +3,8 @@ package kcl.iop.brc.core.kconnect.crisfeeder;
 import java.io.IOException;
 import java.util.Map;
 
+import kcl.iop.brc.core.kconnect.utils.JSONUtils;
+
 import org.apache.log4j.Logger;
 
 import ws.nuist.util.Configurator;
@@ -51,6 +53,7 @@ public class ESDocInputHandler implements InputHandler {
 			    
 			    Document doc = (Document)Factory.createResource("gate.corpora.DocumentImpl",
 			            params, Factory.newFeatureMap(), docId.toString());
+			    doc.getFeatures().put("esDocDetail", JSONUtils.toJSON(data));
 			    if (data.containsKey(_docCreatedDateField))
 			    	doc.getFeatures().put("publicationDate", data.get(_docCreatedDateField).toString());
 			    doc.getFeatures().put("id", data.get(_docGUID).toString());
