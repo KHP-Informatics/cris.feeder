@@ -2,6 +2,7 @@ package kcl.iop.brc.core.kconnect.outputhandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,10 +40,10 @@ public class ESOutputHandler implements OutputHandler {
 	@Override
 	public void config(Map<String, String> params) throws IOException,
 			GateException {
-		if (params.containsKey("output_filed_names")){
-			outputAttributes = params.get("output_filed_names").split(",");
+		if (params.containsKey("output_field_names")){
+			outputAttributes = params.get("output_field_names").split(",");
 		}
-
+		_esStoreUrl = params.get("es_annotation_storage_url");
 	}
 
 	@Override
@@ -54,9 +55,13 @@ public class ESOutputHandler implements OutputHandler {
 	@Override
 	public void init() throws IOException, GateException {
 		_instance = ESClientWorker.getInstance();
-		_esStoreUrl = Configurator.getConfig("es_annotation_storage_url");
+//		_esStoreUrl = Configurator.getConfig("es_annotation_storage_url");
 		anns = JSONUtils.fromJSON( Configurator.getConfig("annotationOutputSettings"), 
 				OutputSetting[].class );
+//		String outputDocAttrs = Configurator.getConfig("output_field_names");
+//		if (null != outputDocAttrs){
+//			outputAttributes = outputDocAttrs.split(",");
+//		}
 		
 	}
 
@@ -78,7 +83,7 @@ public class ESOutputHandler implements OutputHandler {
 			Map resultDoc = new LinkedHashMap<String, Object>();
 			if (outputAttributes != null && outputAttributes.length > 0){
 				for(String attr : outputAttributes){
-					resultDoc.put(attr, origDoc.get(origDoc));
+					resultDoc.put(attr,origDoc. get(attr).toString());
 				}
 			}
 			OutputData od = new OutputData();

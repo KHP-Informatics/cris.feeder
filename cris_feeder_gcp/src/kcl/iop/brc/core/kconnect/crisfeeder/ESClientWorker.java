@@ -6,6 +6,7 @@ import gate.util.GateException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -228,6 +229,65 @@ public class ESClientWorker {
 		throw new Exception(String.format("cannot extract document IDs from [%s]", jsonRet));
 	}
 	
+	public List<String> getAllDocIds(String esAPIUrl, int offset, int size) throws Exception{
+		String jsonRet = null;
+		try {
+			Map<String, String> params = new LinkedHashMap<String, String>();
+			params.put("search_type", "scan");
+			params.put("scroll", "1m" ); //time alive
+			params.put("size", "100000"); //page size
+			params.put("fields", "[]"); 
+			
+			jsonRet = httpGetJSON(esAPIUrl + "/_search", params);
+
+			Map<String, Object> retMap = (Map<String, Object>)JSONUtils.fromJSON(jsonRet);
+			if (retMap.containsKey("_scroll_id")){
+				String scrollId = retMap.get("_scroll_id").toString();
+				int pos1 = esAPIUrl.indexOf("://") ;
+				String hostUrl = esAPIUrl.substring(0, esAPIUrl.substring(pos1 + 3).indexOf("/") + pos1 + 4);
+				params.clear();
+				params.put("scroll", "1m" ); //time alive
+				params.put("scroll_id", scrollId );
+				
+
+				List<String> docIdList = new LinkedList<String>();
+				boolean bHaveNext = true;
+				int curRead = 0;
+				while(bHaveNext){
+					jsonRet = httpGetJSON(hostUrl + "/_search/scroll", params);
+					retMap = (Map<String, Object>)JSONUtils.fromJSON(jsonRet);
+					if (retMap.containsKey("hits")){
+						Map hits = (Map)retMap.get("hits");
+						if (hits.containsKey("hits") && ((List<Map<String, String>>)hits.get("hits")).size() > 0){
+							List<Map<String, String>> docList = (List<Map<String, String>>)hits.get("hits");
+							for(Map<String, String> kvs : docList){
+								if (curRead < offset + size){
+									if (curRead >= offset){
+										docIdList.add(kvs.get("_id"));
+									}
+								}else{
+									//read all needed
+									bHaveNext = false;
+									break;
+								}
+								curRead++;
+							}
+						}else{
+							bHaveNext = false;
+						}
+					}else{
+						bHaveNext = false;
+					}
+				}
+				return docIdList;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		throw new Exception(String.format("cannot extract document IDs from [%s]", jsonRet));
+	}
+	
 	public Map getESDocumentDetail(String esAPIUrl, String docId) throws Exception{
 		String jsonRet = null;
 		try {
@@ -257,7 +317,8 @@ public class ESClientWorker {
 		try {
 			HttpPost httpPost = new HttpPost(esStoreUrl + "/" + docId);
 //			httpPost.setHeader("Authorization", "Basic " + getHttpAuthString());
-			StringEntity entity = new StringEntity(jsonData);
+			StringEntity entity = new StringEntity(jsonData, "application/json",
+				    "UTF-8");
 		    httpPost.setEntity(entity);
 		    response = _httpClient.execute(httpPost);
 			System.out.println(IOUtils.toString(response.getEntity().getContent(), "UTF-8"));
@@ -279,13 +340,17 @@ public class ESClientWorker {
 	
 	public static void main(String[] args){
 		try {
+			
 			ESClientWorker w = ESClientWorker.getInstance();
-			for(int i=0;i<100;i++){
-				Map<String, String> data = new LinkedHashMap<String, String>();
-				data.put("ann", "abcdefg");
-				System.out.println(w.saveESDoc(Configurator.getConfig("es_annotation_storage_url"), 
-						JSONUtils.toJSON(data), w.nextESDocSeqId()));
-			}
+			System.out.println(JSONUtils.toJSON(w.getAllDocIds(
+					"http://timeline2016-silverash.rhcloud.com/mock/doc",
+					500, 100)));
+//			for(int i=0;i<100;i++){
+//				Map<String, String> data = new LinkedHashMap<String, String>();
+//				data.put("ann", "abcdefg");
+//				System.out.println(w.saveESDoc(Configurator.getConfig("es_annotation_storage_url"), 
+//						JSONUtils.toJSON(data), w.nextESDocSeqId()));
+//			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

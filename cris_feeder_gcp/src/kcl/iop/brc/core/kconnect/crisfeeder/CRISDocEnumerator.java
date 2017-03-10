@@ -20,7 +20,7 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 	static Logger _logger = Logger.getLogger(CRISDocEnumerator.class);
 	static long maxSeq = 10000;
 	static int cacheSize = 3000, offset = 0;
-	static String sqlPrefix = "";
+	static String sqlPrefix = "", sqlAll = "";
 	
 	static{
 		maxSeq = Long.parseLong(Configurator.getConfig("cris_max_seq"));
@@ -31,6 +31,8 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 			    DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol")) + ") AS RowNum " +
 			    "FROM " + DBUtil.escapeString(Configurator.getConfig("DocTableName")) +
 			    ") AS MyDerivedTable WHERE MyDerivedTable.RowNum BETWEEN ";
+		sqlAll = "SELECT " + DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol")) + " docid " +
+			    "FROM " + DBUtil.escapeString(Configurator.getConfig("DocTableName"));
 	}
 	
 	private long curSeq = 0;
@@ -42,7 +44,8 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 	
 	void readCacheFromDB(){
 
-		String sql = sqlPrefix + curSeq + " AND " + Math.min(maxSeq, curSeq + cacheSize);
+		String sql = sqlAll;
+//				sqlPrefix + curSeq + " AND " + Math.min(maxSeq, curSeq + cacheSize);
 		try {
 			cachedDocIds.clear();
 			
@@ -82,7 +85,6 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 	public DocumentID next() {
 		try {
 			String docId = getNextDocId();
-			_logger.info("Doc ID: " + docId);
 			return new DocumentID(docId);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -47,6 +47,7 @@ public class CRISDocInputHandler implements InputHandler {
 			GateException {
 		if (null == docId || docId.getIdText() == null) return null;
 		String sql = sqlPrefix + "'" + DBUtil.escapeString(docId.getIdText()) + "'";
+		_logger.info(String.format("====retrieving sql====>%s", sql));
 		try {
 			String[] dataRow = DBHelper.getStringArray(sql, 3);
 
