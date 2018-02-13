@@ -292,9 +292,11 @@ public class ESClientWorker {
 		String jsonRet = null;
 		try {
 			jsonRet = httpGetJSON(esAPIUrl + "/" + docId, null);
-			System.out.println(jsonRet);
+//			System.out.println(jsonRet);
 			Map<String, Object> retMap = (Map<String, Object>)JSONUtils.fromJSON(jsonRet);
 			if (retMap.containsKey("_source")){
+				Map srcMap = (Map)retMap.get("_source");
+				srcMap.put("_id", retMap.get("_id").toString());
 				return (Map)retMap.get("_source");
 			}
 		} catch (IOException e) {

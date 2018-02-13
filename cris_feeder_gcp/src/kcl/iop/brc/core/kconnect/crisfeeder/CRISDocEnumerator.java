@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import ws.nuist.util.Configurator;
+import ws.nuist.util.DBCPPool;
 import ws.nuist.util.DBHelper;
 import ws.nuist.util.DBUtil;
 import ws.nuist.util.exception.DBExecutionException;
@@ -33,23 +34,33 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 			    ") AS MyDerivedTable WHERE MyDerivedTable.RowNum BETWEEN ";
 		sqlAll = "SELECT " + DBUtil.escapeString(Configurator.getConfig("DocTableDocIDCol")) + " docid " +
 			    "FROM " + DBUtil.escapeString(Configurator.getConfig("DocTableName"));
+		_logger.info(sqlAll);
+		try {
+			DBCPPool.printDriverStats();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	private long curSeq = 0;
-	private List<String> cachedDocIds = new LinkedList<String>();
+	private static long curSeq = 0;
+	private static List<String> cachedDocIds = new LinkedList<String>();
+	private static boolean cacheRead = false;
 	
 	public CRISDocEnumerator(){
-		this.curSeq = offset;
+		curSeq = offset;
 	}
 	
-	void readCacheFromDB(){
-
+	static synchronized void readCacheFromDB(){
+		if (cacheRead)
+			return;
 		String sql = sqlAll;
 //				sqlPrefix + curSeq + " AND " + Math.min(maxSeq, curSeq + cacheSize);
 		try {
 			cachedDocIds.clear();
-			
+			_logger.info(String.format("reading cache... [%s]", sql));
 			ArrayList<List<String>> results = DBUtil.getSQLQueryResult(sql);
+			_logger.info(results.size());
 			if (results != null && results.size() > 0){
 				for(int i=0;i<results.size();i++){
 					cachedDocIds.add(DBUtil.getRSMatrixElemByLocation(results, i, 0));
@@ -57,6 +68,7 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 			}else{
 				maxSeq = -1;// no result anymore
 			}
+			cacheRead = true;
 		} catch (Exception e) {
 			_logger.error(e.getMessage() + "\n" + sql);
 			// TODO Auto-generated catch block
@@ -64,7 +76,7 @@ public class CRISDocEnumerator implements DocumentEnumerator {
 		}
 	}
 	
-	synchronized String getNextDocId() throws Exception{
+	static synchronized String getNextDocId() throws Exception{
 		if (cachedDocIds.size() <= 0)
 			readCacheFromDB();
 		if (cachedDocIds.size() > 0){

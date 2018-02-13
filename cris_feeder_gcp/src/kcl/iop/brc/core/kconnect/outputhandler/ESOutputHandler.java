@@ -96,7 +96,9 @@ public class ESOutputHandler implements OutputHandler {
 			if (seqId % 1000 == 0){
 				_logger.info(String.format("%s docs indexed", seqId));
 			}
-			resultDoc.put("yodie_ann", od);
+			
+			//pull out annotations to the upper level
+			resultDoc.put("yodie_ann", outputAnns.get(0));
 			boolean saved = _instance.saveESDoc(_esStoreUrl, JSONUtils.toJSON(resultDoc), seqId);
 			if (!saved){
 				_logger.error(String.format("annotations of doc %s not saved [seqid: %s]", docId.getIdText(), seqId));
