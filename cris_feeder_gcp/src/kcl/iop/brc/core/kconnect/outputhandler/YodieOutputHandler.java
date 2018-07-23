@@ -32,9 +32,9 @@ public class YodieOutputHandler implements OutputHandler{
 	}
 
 	@Override
-	public void config(Map<String, String> arg0) throws IOException,
+	public void config(Map<String, String> settings) throws IOException,
 			GateException {
-		// TODO Auto-generated method stub
+		outputFilePrefix = settings.get("output_folder") + File.separator + "anns";
 		
 	}
 
@@ -47,7 +47,7 @@ public class YodieOutputHandler implements OutputHandler{
 	public void init() throws IOException, GateException {
 		anns = 
 				JSONUtils.fromJSON( Configurator.getConfig("annotationOutputSettings"), OutputSetting[].class );
-		outputFilePrefix = Configurator.getConfig("outputFilePrefix");
+//		outputFilePrefix = Configurator.getConfig("outputFilePrefix");
 	}
 
 	@Override
@@ -84,6 +84,8 @@ public class YodieOutputHandler implements OutputHandler{
 					od.setDocId(doc.getFeatures().get("id").toString());
 			else
 				od.setDocId(doc.getName());
+			if (doc.getFeatures()!=null && doc.getFeatures().get("brcid")!=null)
+				od.setBrcId(doc.getFeatures().get("brcid").toString());
 			od.setAnnotations(outputAnns);
 			String s = JSONUtils.toJSON(od) + "\n";
 			
@@ -116,7 +118,7 @@ public class YodieOutputHandler implements OutputHandler{
 	}
 	
 	static class OutputData{
-		String docId;
+		String docId, brcId;
 		List<AnnotationSet> annotations;
 		public String getDocId() {
 			return docId;
@@ -129,6 +131,12 @@ public class YodieOutputHandler implements OutputHandler{
 		}
 		public void setAnnotations(List<AnnotationSet> annotations) {
 			this.annotations = annotations;
+		}
+		public String getBrcId() {
+			return brcId;
+		}
+		public void setBrcId(String brcId) {
+			this.brcId = brcId;
 		}
 		
 	}
