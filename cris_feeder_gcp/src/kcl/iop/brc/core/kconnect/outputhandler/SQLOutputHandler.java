@@ -86,11 +86,11 @@ public class SQLOutputHandler implements OutputHandler {
 		 Iterator<Annotation> annIt = annSet.iterator();
 		 while(annIt.hasNext()){
 			 Annotation ann = annIt.next();
-			 List<Object> args = new LinkedList<Object>();
 			 FeatureMap fm = ann.getFeatures();
 			 if (conceptString != null && conceptString.indexOf(fm.get("inst").toString()) < 0){
 				 continue;
 			 }
+			 List<Object> args = new LinkedList<Object>();
 			 args.add(docId);
 			 args.add(ann.getStartNode().getOffset().toString());
 			 args.add(ann.getEndNode().getOffset().toString());
@@ -127,10 +127,12 @@ public class SQLOutputHandler implements OutputHandler {
 			}
 			
 			try {
-				if (dbConnURI == null)
-					DBUtil.executeBatchUpdate(sqls.toArray(new String[0]));
-				else
-					DBUtil.executeBatchUpdateByURI(sqls.toArray(new String[0]), dbConnURI);
+				if (sqls.size() > 0){
+					if (dbConnURI == null)
+						DBUtil.executeBatchUpdate(sqls.toArray(new String[0]));
+					else
+						DBUtil.executeBatchUpdateByURI(sqls.toArray(new String[0]), dbConnURI);
+				}
 				_logger.info(String.format("doc %s indexed with %d annotations", did.toString(), sqls.size()));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
