@@ -97,7 +97,7 @@ public class CRISDocInputHandler implements InputHandler {
 				}		
 				
 
-				params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, docContent);
+				params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, processBeforeNLP(docContent));
 				doc = (Document)Factory.createResource("gate.corpora.DocumentImpl",
 		                params, Factory.newFeatureMap(), docId.toString());			    
 			    
@@ -129,7 +129,7 @@ public class CRISDocInputHandler implements InputHandler {
 						" where CN_Doc_ID='" + cnDocId + "'";
 				String[] docData = DBHelper.getStringArray(docSql, 3);
 				docContent = docData[0];
-				params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, docContent);
+				params.put(Document.DOCUMENT_STRING_CONTENT_PARAMETER_NAME, processBeforeNLP(docContent));
 				doc = (Document)Factory.createResource("gate.corpora.DocumentImpl",
 		                params, Factory.newFeatureMap(), docId.toString());	
 				
@@ -161,6 +161,10 @@ public class CRISDocInputHandler implements InputHandler {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	static String processBeforeNLP(String text){
+		return text.replaceAll("\\s{2,}", " ");
 	}
 
 	@Override
